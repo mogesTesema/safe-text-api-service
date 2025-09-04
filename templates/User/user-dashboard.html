@@ -101,7 +101,7 @@
               ><i class="fas fa-key fa-fw mr-3"></i>API Keys</a
             >
             <a
-              href="http://127.0.0.1:8000/docs"
+              href="https://mogestesema-safe-text-model.hf.space/docs"
               class="sidebar-link text-lg px-4 py-3 rounded-r-lg"
               id="document-open"
               target="_blank"
@@ -341,10 +341,7 @@
                   }
               }
 
-              // Poll every 5 seconds (adjust as needed)
-              const POLL_MS = 5000;
-              //setInterval(fetchUsageStats, POLL_MS);
-              // call once immediately
+            // remove setInterval calling
               fetchUsageStats();
           })();
 

@@ -1,4 +1,4 @@
-from flask import Flask, render_template,redirect, request,url_for,flash,jsonify
+from flask import Flask, render_template,redirect, request,url_for,flash,jsonify,make_response
 from .utility.database.main import get_session # .utility "." in order to find utility module inside fullstack folder
 from .utility.database.model import User,Admin,APIKey,UsageLog,TextAnalysisRequest
 from flask import session
@@ -286,6 +286,50 @@ def admin_login():
         # ❌ Show flash if login fails
         flash("Invalid email or password. pls try again", "error")
     return render_template("admin/admin-login.html")
+@app.route('/api/usage-stats', methods=['GET'])
+@login_required
+def get_usage_stats():
+    """
+    Handle the frontend polling for usage statistics with caching
+    """
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    db = get_session()
+    try:
+        # Get user credits
+        user = db.exec(select(User).where(User.id == user_id)).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        # Get usage logs for chart data
+        usage_logs = db.exec(select(UsageLog).where(UsageLog.userid == user_id)).all()
+        
+        # Get total analyzed texts
+        total_analyzed = db.exec(
+            select(func.count(TextAnalysisRequest.id)).where(
+                TextAnalysisRequest.userid == user_id
+            )
+        ).first() or 0
+
+        # Generate chart data
+        chart_data = map_logs_to_weekly_chart_data(usage_logs=usage_logs)
+
+        response_data = {
+            "credits_remaining": user.credits,
+            "total_analyzed": total_analyzed,
+            "chart_data": chart_data
+        }
+
+        # Create response with caching headers
+        response = make_response(jsonify(response_data))  # noqa: F821
+        response.headers['Cache-Control'] = 'no-cache'  # Or 'max-age=5' for 5-second caching
+        return response
+
+    except Exception as e:
+        print(f"--- USAGE STATS ERROR ---: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 @app.route('/logout')
 def logout():

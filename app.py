@@ -245,7 +245,7 @@ def user_signup():
         flash("Signup successful! Please log in.", "success")
         return redirect(url_for("user_login"))
 
-    return render_template("user/user-registration.html")
+    return render_template("User/user-registration.html")
 
 
 @app.route("/user/login", methods=["GET", "POST"])
@@ -265,7 +265,7 @@ def user_login():
 
          # ❌ Show flash if login fails
         flash("Invalid email or password. please try again", "error")
-    return render_template("user/user-login.html")
+    return render_template("User/user-login.html")
 
 
 @app.route("/admin/login", methods=["GET", "POST"])
@@ -285,7 +285,7 @@ def admin_login():
 
         # ❌ Show flash if login fails
         flash("Invalid email or password. pls try again", "error")
-    return render_template("admin/admin-login.html")
+    return render_template("Admin/admin-login.html")
 @app.route('/api/usage-stats', methods=['GET'])
 @login_required
 def get_usage_stats():

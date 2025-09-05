@@ -1,13 +1,13 @@
 from flask import Flask, render_template,redirect, request,url_for,flash,jsonify,make_response
-from .utility.database.main import get_session # .utility "." in order to find utility module inside fullstack folder
-from .utility.database.model import User,Admin,APIKey,UsageLog,TextAnalysisRequest
+from utility.database.main import get_session # .utility "." in order to find utility module inside fullstack folder
+from utility.database.model import User,Admin,APIKey,UsageLog,TextAnalysisRequest
 from flask import session
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlmodel import SQLModel, Session, select, func, delete
 from sqlalchemy import and_
 from functools import wraps
 import secrets  
-from .utility.mapper import map_logs_to_weekly_chart_data
+from utility.mapper import map_logs_to_weekly_chart_data
 # Set the secret key to some random bytes. Keep this really secret!
 
 app = Flask(__name__,)
@@ -345,3 +345,4 @@ def check_session():
 if __name__ == '__main__':
 
     app.run()
+# we fixed the error

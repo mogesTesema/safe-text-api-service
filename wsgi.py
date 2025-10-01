@@ -1,4 +1,4 @@
-from app import app
+from .app import app
 #absolute import
 
 if __name__ == "__main__":

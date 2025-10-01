@@ -56,28 +56,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const confidenceScore = document.getElementById('confidence-score');
     
     if (analyzeBtn) {
-        analyzeBtn.addEventListener('click', function() {
+        analyzeBtn.addEventListener('click', async function() {
             const text = demoInput.value.trim();
             
             if (!text) {
                 alert('Please enter some text to analyze.');
                 return;
             }
-            
+    
             // Show loading state
             this.disabled = true;
             this.textContent = 'Analyzing...';
             processingTime.textContent = '0.00s';
-            
-            // Simulate API call with random results
-            setTimeout(() => {
-                const toxicity = Math.random() * 100;
-                const confidence = 80 + Math.random() * 20;
-                
-                // Update UI with results
+            demoResult.classList.add('hidden');
+    
+            const startTime = performance.now();
+    
+            try {
+                const response = await fetch("https://mogestesema-safe-text-model.hf.space/analyze", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": "safe_ee0429e2d368f6b8038775783a0805deeb363de70f6add43"
+                    },
+                    body: JSON.stringify({ text })
+                });
+    
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+    
+                const data = await response.json();
+    
+                if (!data.success || !data.result) {
+                    throw new Error("Invalid response format");
+                }
+    
+                const result = data.result;
+    
+                // Compute max toxicity
+                const toxicity = Math.max(
+                    result.toxicity ?? 0,
+                    result.severe_toxicity ?? 0,
+                    result.obscene ?? 0,
+                    result.identity_attack ?? 0,
+                    result.insult ?? 0,
+                    result.threat ?? 0,
+                    result.sexual_explicit ?? 0,
+                    result.average ?? 0
+                );
+    
+                // Confidence = same as model certainty in its prediction
+                const confidence = toxicity;
+    
+                // Show result UI
                 demoResult.classList.remove('hidden');
-                
-                // Set toxicity level and color
+    
+                // Determine toxicity level and color
                 if (toxicity < 30) {
                     resultStatus.textContent = 'Safe';
                     resultStatus.className = 'px-3 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-400';
@@ -91,25 +124,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     resultStatus.className = 'px-3 py-1 rounded-full text-sm font-medium bg-red-500/20 text-red-400';
                     toxicityBar.className = 'bg-red-500 h-full rounded-full transition-all duration-1000';
                 }
-                
+    
                 // Animate bars
                 setTimeout(() => {
-                    toxicityBar.style.width = `${toxicity}%`;
-                    confidenceBar.style.width = `${confidence}%`;
+                    toxicityBar.style.width = `${toxicity.toFixed(1)}%`;
+                    confidenceBar.style.width = `${confidence.toFixed(1)}%`;
                 }, 100);
-                
+    
                 // Update scores
                 toxicityScore.textContent = `${toxicity.toFixed(1)}%`;
                 confidenceScore.textContent = `${confidence.toFixed(1)}%`;
-                
-                // Update processing time
-                const time = (0.5 + Math.random() * 0.5).toFixed(2);
-                processingTime.textContent = `${time}s`;
-                
-                // Reset button
+    
+                // Measure real processing time
+                const endTime = performance.now();
+                const elapsed = ((endTime - startTime) / 1000).toFixed(2);
+                processingTime.textContent = `${elapsed}s`;
+    
+            } catch (error) {
+                console.error("Analysis failed:", error);
+                alert("Failed to analyze text. Please try again.");
+            } finally {
                 this.disabled = false;
                 this.textContent = 'Analyze Text';
-            }, 1000);
+            }
         });
     }
     

@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "x-api-key": "safe_ee0429e2d368f6b8038775783a0805deeb363de70f6add43"
+                        "x-api-key": "safe_a1efa8ee3847739b89548214cb74666745940c8ecaf990d1"
                     },
                     body: JSON.stringify({ text })
                 });
